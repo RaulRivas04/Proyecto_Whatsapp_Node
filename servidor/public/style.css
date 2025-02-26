@@ -1,0 +1,732 @@
+/* Estilo general del cuerpo */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #e5ddd5;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Estilo para los formularios de login y el contenedor del chat */
+#loginForm, #chatContainer {
+    width: 90%;
+    max-width: 1200px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* Estilo específico para el formulario de login */
+#loginForm {
+    text-align: center;
+}
+
+/* Estilo para los inputs del formulario de login */
+#loginForm input[type="text"], #loginForm input[type="email"], #loginForm input[type="password"] {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Estilo para el botón del formulario de login */
+#loginForm button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #25d366;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Estilo para el botón del formulario de login al pasar el ratón */
+#loginForm button:hover {
+    background-color: #20b358;
+}
+
+/* Estilo para el contenedor del chat */
+#chatContainer {
+    display: flex;
+    height: 80vh;
+}
+
+/* Estilo para la barra lateral */
+#sidebar {
+    width: 30%;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+
+/* Estilo para los encabezados de la barra lateral */
+#sidebar h3 {
+    margin-top: 0;
+    color: #075e54;
+    font-size: 24px;
+    border-bottom: 2px solid #075e54;
+    padding-bottom: 10px;
+}
+
+/* Estilo para las listas de salas y usuarios */
+#roomList, #userList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Estilo para los elementos de las listas de salas y usuarios */
+#roomList li, #userList li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s;
+}
+
+/* Estilo para los elementos de las listas al pasar el ratón */
+#roomList li:hover, #userList li:hover {
+    background-color: #e9ecef;
+}
+
+/* Estilo para los iconos y avatares en las listas */
+#roomList li i, #userList li img.avatar {
+    margin-right: 10px;
+}
+
+/* Estilo para los iconos en la lista de salas */
+#roomList li i {
+    color: #075e54;
+}
+
+/* Estilo para los avatares en la lista de usuarios */
+#userList li img.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+/* Estilo para el estado de los usuarios en la lista */
+#userList li .status {
+    margin-left: auto;
+    color: #25d366;
+    font-weight: bold;
+}
+
+/* Estilo para el estado de los usuarios desconectados */
+#userList li .status.offline {
+    color: #888;
+}
+
+/* Estilo para el input de nuevo nombre de sala */
+#newRoomName {
+    width: calc(100% - 40px);
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Estilo para el botón de crear sala */
+#createRoomForm button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #25d366;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilo para el icono dentro del botón de crear sala */
+#createRoomForm button i {
+    margin-right: 5px;
+}
+
+/* Estilo para el botón de crear sala al pasar el ratón */
+#createRoomForm button:hover {
+    background-color: #20b358;
+}
+
+/* Estilo para el contenedor del chat */
+#chatBox {
+    width: 70%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    background-color: #d0e7f9;
+    background-image: url('img/fondo.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+    padding-bottom: 60px;
+}
+
+/* Estilo para las listas de mensajes */
+#mensajes, #messages, #privateMessages {
+    list-style-type: none;
+    padding: 0;
+    flex-grow: 1;
+    overflow-y: auto;
+    border-bottom: 1px solid #ccc;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+/* Estilo para los elementos de las listas de mensajes */
+#mensajes li, #messages li, #privateMessages li {
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+/* Estilo para los mensajes propios */
+#mensajes li.own-message, #messages li.own-message, #privateMessages li.own-message {
+    justify-content: flex-end;
+}
+
+/* Estilo para el contenido de los mensajes propios */
+#mensajes li.own-message .message-content, #messages li.own-message .message-content, #privateMessages li.own-message .message-content {
+    text-align: right;
+    background-color: #dcf8c6;
+}
+
+/* Estilo para el contenido de los mensajes */
+.message-content {
+    max-width: 70%;
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Estilo para los avatares en los mensajes */
+.message-content img.avatar {
+    margin-right: 10px;
+}
+
+/* Estilo para los avatares en los mensajes propios */
+#mensajes li.own-message .message-content img.avatar, #messages li.own-message .message-content img.avatar, #privateMessages li.own-message .message-content img.avatar {
+    margin-left: 10px;
+    margin-right: 0;
+}
+
+/* Estilo para el input de texto */
+#cajaTexto, #textInput {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    margin-top: 10px;
+    flex-grow: 1;
+    width: calc(100% - 80px);
+    box-sizing: border-box;
+    font-size: 16px;
+    outline: none;
+}
+
+/* Estilo para el input de texto */
+#cajaTexto {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    flex-grow: 1;
+    margin: 0 8px;
+    box-sizing: border-box;
+    font-size: 14px;
+    outline: none;
+}
+
+/* Estilo para el input de archivo */
+#fileInput {
+    display: none;
+}
+
+/* Estilo para la etiqueta del input de archivo */
+#fileLabel {
+    padding: 8px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    margin: 0 5px;
+}
+
+/* Estilo para la etiqueta del input de archivo al pasar el ratón */
+#fileLabel:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para el icono dentro de la etiqueta del input de archivo */
+#fileLabel i {
+    font-size: 16px;
+}
+
+/* Estilo para el botón de enviar */
+#enviar, #sendButton {
+    padding: 8px;
+    border: none;
+    background-color: #25d366;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: 10px;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 5px;
+}
+
+/* Estilo para el botón de enviar al pasar el ratón */
+#enviar:hover, #sendButton:hover {
+    background-color: #20b358;
+}
+
+/* Estilo para el icono dentro del botón de enviar */
+#enviar i, #sendButton i {
+    font-size: 16px;
+}
+
+/* Estilo para el botón de enviar */
+#enviar {
+    background-color: #25d366;
+}
+
+/* Estilo para el botón de enviar al pasar el ratón */
+#enviar:hover {
+    background-color: #20b358;
+}
+
+/* Estilo para el icono dentro del botón de enviar */
+#enviar i {
+    font-size: 18px;
+}
+
+/* Estilo para los avatares */
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+/* Estilo para el indicador de escritura */
+#typingIndicator {
+    color: #25d366;
+    margin-top: 10px;
+    font-style: italic;
+    font-weight: bold;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+/* Estilo para el indicador de escritura antes del contenido */
+#typingIndicator::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background-color: #25d366;
+    animation: typingIndicatorBlink 1s infinite;
+}
+
+/* Animación para el indicador de escritura */
+@keyframes typingIndicatorBlink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Estilo para el mensaje de bienvenida */
+#welcomeMessage {
+    text-align: center;
+    margin-top: 20px;
+    background-color: #dcf8c6;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 1s ease-in-out;
+    max-width: 90%;
+    margin: 20px auto;
+    overflow: hidden;
+}
+
+/* Estilo para el encabezado del mensaje de bienvenida */
+#welcomeMessage h2 {
+    color: #075e54;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+/* Estilo para el párrafo del mensaje de bienvenida */
+#welcomeMessage p {
+    color: #555;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+/* Estilo para la lista del mensaje de bienvenida */
+#welcomeMessage ul {
+    list-style-type: none;
+    padding: 0;
+    color: #555;
+    font-size: 18px;
+    text-align: left;
+    display: inline-block;
+    margin-top: 10px;
+    max-width: 100%;
+}
+
+/* Estilo para los elementos de la lista del mensaje de bienvenida */
+#welcomeMessage ul li {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+/* Estilo para los iconos dentro de la lista del mensaje de bienvenida */
+#welcomeMessage ul li i {
+    margin-right: 10px;
+    color: #075e54;
+}
+
+/* Estilo para la imagen de bienvenida */
+.welcome-image {
+    display: block;
+    margin: 20px auto;
+    max-width: 150px;
+    height: auto;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #dcf8c6;
+    padding: 10px;
+}
+
+/* Estilo para la hora del mensaje */
+.message-time {
+    font-size: 0.8em;
+    color: #888;
+    margin-left: 10px;
+}
+
+/* Estilo para la fecha */
+.fecha {
+    text-align: center;
+    color: #888;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+/* Estilo para el contenedor de entrada */
+#inputContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-color: #ffffff;
+    border-top: 1px solid #ccc;
+}
+
+/* Animación de desvanecimiento */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Estilo para el encabezado del usuario */
+#userHeader {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    background-color: #f8f9fa;
+}
+
+/* Estilo para el avatar en el encabezado del usuario */
+#userHeader img.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+/* Estilo para el nombre del usuario en el encabezado */
+#userHeader #userName {
+    font-size: 18px;
+    font-weight: bold;
+    color: #075e54;
+}
+
+/* Estilo para el encabezado del chat */
+#chatHeader {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    background-color: #f8f9fa;
+}
+
+/* Estilo para el avatar en el encabezado del chat */
+#chatHeader img.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+/* Estilo para el nombre del chat en el encabezado */
+#chatHeader #chatName {
+    font-size: 18px;
+    font-weight: bold;
+    color: #075e54;
+}
+
+/* Estilo para el estado del chat en el encabezado */
+#chatHeader #chatStatus {
+    margin-left: 10px;
+    font-size: 14px;
+    color: #888;
+}
+
+/* Estilos para el modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%; 
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+/* Estilo para el contenido del modal */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+}
+
+/* Estilo para el botón de cerrar el modal */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Estilo para el botón de cerrar el modal al pasar el ratón */
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Estilo para el botón de salir de la sala */
+#leaveRoomButton {
+    margin-left: auto;
+    padding: 8px 16px;
+    border: none;
+    background-color: #25d366;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+/* Estilo para el botón de salir de la sala al pasar el ratón */
+#leaveRoomButton:hover {
+    background-color: #20b358;
+}
+
+/* Estilo para el botón de eliminar la sala */
+#deleteRoomButton {
+    margin-left: 10px;
+    padding: 8px 16px;
+    border: none;
+    background-color: #25d366;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+#deleteRoomButton:hover {
+    background-color: #20b358;
+}
+
+/* Estilo para las barras de desplazamiento */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.connection-message {
+    color: #ffffff;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+    animation: fadeIn 1s ease-in-out;
+}
+
+.disconnection-message {
+    color: #ffffff;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* Estilos generales para dispositivos móviles */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+    }
+
+    #loginForm, #chatContainer {
+        width: 100%;
+        padding: 10px;
+    }
+
+    #chatContainer {
+        flex-direction: column;
+        height: auto;
+    }
+
+    #sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+        padding: 10px;
+    }
+
+    #chatBox {
+        width: 100%;
+        padding: 10px;
+        height: auto;
+    }
+
+    #inputContainer {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+    }
+
+    #cajaTexto, #textInput {
+        width: calc(100% - 80px);
+        margin: 0 5px;
+    }
+
+    #fileLabel, #enviar, #sendButton {
+        width: 35px;
+        height: 35px;
+        margin: 0 5px;
+    }
+
+    #welcomeMessage {
+        max-width: 100%;
+        padding: 15px;
+        text-align: center;
+    }
+
+    #welcomeMessage h2 {
+        font-size: 24px;
+    }
+
+    #welcomeMessage p {
+        font-size: 18px;
+    }
+
+    #welcomeMessage ul {
+        font-size: 16px;
+        padding-left: 20px;
+    }
+
+    .welcome-image {
+        max-width: 100px;
+        display: block;
+        margin: 20px auto;
+    }
+
+    /* Ajustar el tamaño de los iconos en la vista móvil */
+    #fileLabel i, #enviar i, #sendButton i {
+        font-size: 14px;
+    }
+}
+
+#fileLabel i, #enviar i, #sendButton i {
+    font-size: 16px;
+}
+
+#fileLabel, #enviar, #sendButton {
+    width: 30px;
+    height: 30px;
+    margin: 0 5px;
+}

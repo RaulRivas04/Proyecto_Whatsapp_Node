@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Clone</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="img/logo.png" type="image/png">
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        window.onload = () => {
+            const socket = io();
+            let miNombre, miEstado, miAvatar, miSala;
+            let usuarioSeleccionado = null;
+
+            // Obtener elementos del DOM
+            const loginForm = document.getElementById("loginForm");
+            const chatContainer = document.getElementById("chatContainer");
+            const userList = document.getElementById("userList");
+            const roomList = document.getElementById("roomList");
+            const mensajes = document.getElementById("mensajes");
+            const privateMessages = document.getElementById("privateMessages");
+            const cajaTexto = document.getElementById("cajaTexto");
+            const btnEnviar = document.getElementById("enviar");
+            const typingIndicator = document.getElementById("typingIndicator");
+            const fileInput = document.getElementById("fileInput");
+            const fileLabel = document.getElementById("fileLabel");
+            const createRoomForm = document.getElementById("createRoomForm");
+            const newRoomName = document.getElementById("newRoomName");
+            const customAvatarInput = document.getElementById("customAvatar");
+            const welcomeMessage = document.getElementById("welcomeMessage");
+            const chatHeader = document.getElementById("chatHeader");
+            const chatAvatar = document.getElementById("chatAvatar");
+            const chatName = document.getElementById("chatName");
+            const chatStatus = document.getElementById("chatStatus");
+
+            // Elementos del modal
+            const modal = document.getElementById("modal");
+            const modalMessage = document.getElementById("modalMessage");
+            const closeModal = document.getElementsByClassName("close")[0];
+
+            // Función para mostrar el modal con un mensaje
+            function showModal(message) {
+                modalMessage.textContent = message;
+                modal.style.display = "block";
+            }
+
+            // Cerrar el modal cuando el usuario hace clic en <span> (x)
+            closeModal.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            // Cerrar el modal cuando el usuario hace clic fuera del modal
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            // Mostrar mensaje de bienvenida
+            welcomeMessage.style.display = "block";
+
+            // Habilitar o deshabilitar el input de tipo file según la selección del avatar
+            document.querySelectorAll('input[name="avatar"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (radio.value === 'custom') {
+                        customAvatarInput.disabled = false;
+                    } else {
+                        customAvatarInput.disabled = true;
+                    }
+                });
+            });
+
+            // Manejar el evento de envío del formulario de inicio de sesión
+            loginForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                miNombre = document.getElementById("nombre").value;
+                miEstado = document.getElementById("estado").value;
+                const selectedAvatar = document.querySelector('input[name="avatar"]:checked').value;
+                const selectedRoom = document.getElementById("roomSelect").value;
+
+                if (selectedAvatar === "custom") {
+                    if (customAvatarInput.files.length === 0) {
+                        showModal("Por favor, selecciona una imagen para tu avatar.");
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        miAvatar = event.target.result;
+                        socket.emit("login", { nombre: miNombre, estado: miEstado, avatar: miAvatar });
+                        loginForm.style.display = "none";
+                        chatContainer.style.display = "flex";
+                        handleRoomSelection(selectedRoom);
+                    };
+                    reader.readAsDataURL(customAvatarInput.files[0]);
+                } else {
+                    miAvatar = selectedAvatar;
+                    socket.emit("login", { nombre: miNombre, estado: miEstado, avatar: miAvatar });
+                    loginForm.style.display = "none";
+                    chatContainer.style.display = "flex";
+                    handleRoomSelection(selectedRoom);
+                }
+            });
+
+            // Función para manejar la selección de sala
+            function handleRoomSelection(room) {
+                if (room === "none") {
+                    welcomeMessage.style.display = "block";
+                    mensajes.style.display = "none";
+                    privateMessages.style.display = "none";
+                    cajaTexto.style.display = "none";
+                    fileLabel.style.display = "none";
+                    btnEnviar.style.display = "none";
+                    typingIndicator.style.display = "none";
+                    chatHeader.style.display = "none";
+                    leaveRoomButton.style.display = "none";
+                    deleteRoomButton.style.display = "none"; // Ocultar botón de eliminar
+                } else {
+                    socket.emit("joinRoom", room);
+                    miSala = room;
+                    mensajes.innerHTML = ""; // Limpiar mensajes al cambiar de sala
+                    mensajes.style.display = "block";
+                    privateMessages.style.display = "none";
+                    usuarioSeleccionado = null; // Limpiar usuario seleccionado
+                    welcomeMessage.style.display = "none"; // Ocultar mensaje de bienvenida
+                    cajaTexto.style.display = "block";
+                    fileLabel.style.display = "block";
+                    btnEnviar.style.display = "block";
+                    typingIndicator.style.display = "block";
+                    chatHeader.style.display = "flex";
+                    chatAvatar.style.display = "none"; // Ocultar avatar para chat grupal
+                    chatName.innerHTML = `<i class="fas fa-comments"></i> ${room}`;
+                    chatStatus.textContent = ""; // Limpiar estado del chat grupal
+
+                    // Mostrar botón de salir de la sala solo para salas creadas por el usuario
+                    if (room !== 'general' && room !== 'chat1' && room !== 'chat2') {
+                        leaveRoomButton.style.display = 'block';
+                        deleteRoomButton.style.display = 'block'; // Mostrar botón de eliminar
+                    } else {
+                        leaveRoomButton.style.display = 'none';
+                        deleteRoomButton.style.display = 'none'; // Ocultar botón de eliminar
+                    }
+                }
+            }
+
+            // Manejar el evento de envío del formulario de creación de sala
+            createRoomForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                const roomName = newRoomName.value.trim();
+                if (roomName) {
+                    socket.emit("createRoom", roomName);
+                    newRoomName.value = "";
+                }
+            });
+
+            // Manejar el evento de clic en el botón de enviar
+            btnEnviar.addEventListener("click", () => {
+                if (cajaTexto.value.trim() !== "") {
+                    enviarMensaje();
+                }
+            });
+
+            // Manejar el evento de presionar una tecla en la caja de texto
+            cajaTexto.addEventListener("keypress", (event) => {
+                if (event.key === "Enter" && cajaTexto.value.trim() !== "") {
+                    enviarMensaje();
+                }
+            });
+
+            // Función para enviar un mensaje
+            function enviarMensaje() {
+                let datosEnviar = {
+                    nombre: miNombre,
+                    mensaje: cajaTexto.value,
+                    avatar: miAvatar
+                };
+                if (usuarioSeleccionado) {
+                    socket.emit("privateMessage", { to: usuarioSeleccionado, message: cajaTexto.value });
+                    privateMessages.innerHTML += `<li class="own-message"><div class="message-content"><img src="${miAvatar}" alt="avatar" class="avatar"><strong>Privado a ${usuarioSeleccionado}:</strong> ${cajaTexto.value} <span class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div></li>`;
+                } else {
+                    socket.emit("mensaje", datosEnviar);
+                }
+                cajaTexto.value = "";
+            }
+
+            // Manejar el evento de cambio en el input de archivo
+            fileInput.addEventListener("change", () => {
+                const file = fileInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const fileData = event.target.result;
+                        if (usuarioSeleccionado) {
+                            socket.emit("privateFile", { to: usuarioSeleccionado, fileName: file.name, fileData, avatar: miAvatar });
+                            let fileElement;
+                            if (fileData.startsWith("data:image")) {
+                                fileElement = `<a href="${fileData}" download="${file.name}"><img src="${fileData}" alt="${file.name}" style="max-width: 200px;"></a>`;
+                            } else {
+                                fileElement = `<a href="${fileData}" download="${file.name}">${file.name}</a>`;
+                            }
+                            privateMessages.innerHTML += `<li class="own-message"><div class="message-content"><img src="${miAvatar}" alt="avatar" class="avatar"><strong>Privado a ${usuarioSeleccionado}:</strong> ${fileElement} <span class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div></li>`;
+                        } else {
+                            socket.emit("file", { nombre: miNombre, fileName: file.name, fileData, avatar: miAvatar });
+                            let fileElement;
+                            if (fileData.startsWith("data:image")) {
+                                fileElement = `<a href="${fileData}" download="${file.name}"><img src="${fileData}" alt="${file.name}" style="max-width: 200px;"></a>`;
+                            } else {
+                                fileElement = `<a href="${fileData}" download="${file.name}">${file.name}</a>`;
+                            }
+                            mensajes.innerHTML += `<li class="own-message"><div class="message-content"><img src="${miAvatar}" alt="avatar" class="avatar"><strong>${miNombre}:</strong> ${fileElement} <span class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div></li>`;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Manejar el evento de entrada en la caja de texto
+            cajaTexto.addEventListener("input", () => {
+                socket.emit("typing", miNombre);
+            });
+
+            // Manejar el evento de clic en la lista de salas
+            roomList.addEventListener("click", (event) => {
+                if (event.target.tagName === "LI" || event.target.closest("li")) {
+                    const roomItem = event.target.tagName === "LI" ? event.target : event.target.closest("li");
+                    const room = roomItem.getAttribute("data-room");
+                    handleRoomSelection(room);
+                }
+            });
+
+            // Manejar el evento de clic en la lista de usuarios
+            userList.addEventListener("click", async (event) => {
+                if (event.target.tagName === "LI" || event.target.closest("li")) {
+                    const userItem = event.target.tagName === "LI" ? event.target : event.target.closest("li");
+                    usuarioSeleccionado = userItem.getAttribute("data-username");
+                    const avatarSrc = userItem.querySelector("img.avatar").src;
+                    const estado = userItem.getAttribute("data-status");
+                    chatAvatar.src = avatarSrc;
+                    chatAvatar.style.display = "block"; // Mostrar avatar para chat privado
+                    chatName.textContent = usuarioSeleccionado;
+                    chatStatus.textContent = estado;
+                    chatHeader.style.display = "flex";
+                    welcomeMessage.style.display = "none";
+                    privateMessages.style.display = "block";
+                    mensajes.style.display = "none";
+                    cajaTexto.style.display = "block";
+                    fileLabel.style.display = "block";
+                    btnEnviar.style.display = "block";
+                    typingIndicator.style.display = "block";
+                    privateMessages.innerHTML = ""; // Limpiar mensajes privados anteriores
+
+                    // Ocultar botones de salir y eliminar sala para chats privados
+                    leaveRoomButton.style.display = 'none';
+                    deleteRoomButton.style.display = 'none';
+
+                    // Recuperar y mostrar mensajes privados anteriores
+                    const response = await fetch(`/privateMessages?from=${miNombre}&to=${usuarioSeleccionado}`);
+                    const messages = await response.json();
+                    messages.forEach(msg => {
+                        const alignmentClass = msg.from === miNombre ? 'own-message' : '';
+                        privateMessages.innerHTML += `<li class="${alignmentClass}"><div class="message-content"><img src="${msg.avatar}" alt="avatar" class="avatar"><strong>${msg.from}:</strong> ${msg.message} <span class="message-time">${msg.hora}</span></div></li>`;
+                    });
+                }
+            });
+
+            // Manejar el evento de recepción de un mensaje
+            socket.on("mensaje", (datos) => {
+                const alignmentClass = datos.nombre === miNombre ? 'own-message' : '';
+                const avatar = datos.avatar || 'avatars/avatar.png'; // Usar avatar del sistema si no se proporciona
+                mensajes.innerHTML += `<li class="${alignmentClass}"><div class="message-content"><img src="${avatar}" alt="avatar" class="avatar"><strong>${datos.nombre}:</strong> ${datos.mensaje} <span class="message-time">${datos.hora}</span></div></li>`;
+            });
+
+            // Manejar el evento de recepción de un archivo
+            socket.on("file", (datos) => {
+                const { nombre, fileName, fileData, avatar, hora } = datos;
+                const alignmentClass = nombre === miNombre ? 'own-message' : '';
+                let fileElement;
+                if (fileData.startsWith("data:image")) {
+                    fileElement = `<a href="${fileData}" download="${fileName}"><img src="${fileData}" alt="${fileName}" style="max-width: 200px;"></a>`;
+                } else {
+                    fileElement = `<a href="${fileData}" download="${fileName}">${fileName}</a>`;
+                }
+                mensajes.innerHTML += `<li class="${alignmentClass}"><div class="message-content"><img src="${avatar}" alt="avatar" class="avatar"><strong>${nombre}:</strong> ${fileElement} <span class="message-time">${hora}</span></div></li>`;
+            });
+
+            // Manejar el evento de recepción de un mensaje privado
+            socket.on("privateMessage", (datos) => {
+                const alignmentClass = datos.from === miNombre ? 'own-message' : '';
+                privateMessages.innerHTML += `<li class="${alignmentClass}"><div class="message-content"><img src="${datos.avatar}" alt="avatar" class="avatar"><strong>Privado de ${datos.from}:</strong> ${datos.message} <span class="message-time">${datos.hora}</span></div></li>`;
+            });
+
+            // Manejar el evento de recepción de un archivo privado
+            socket.on("privateFile", (datos) => {
+                const { from, fileName, fileData, avatar, hora } = datos;
+                const alignmentClass = from === miNombre ? 'own-message' : '';
+                let fileElement;
+                if (fileData.startsWith("data:image")) {
+                    fileElement = `<a href="${fileData}" download="${fileName}"><img src="${fileData}" alt="${fileName}" style="max-width: 200px;"></a>`;
+                } else {
+                    fileElement = `<a href="${fileData}" download="${fileName}">${fileName}</a>`;
+                }
+                privateMessages.innerHTML += `<li class="${alignmentClass}"><div class="message-content"><img src="${avatar}" alt="avatar" class="avatar"><strong>Privado de ${from}:</strong> ${fileElement} <span class="message-time">${hora}</span></div></li>`;
+            });
+
+            // Manejar el evento de actualización de la lista de usuarios
+            socket.on("userList", (users) => {
+                userList.innerHTML = "";
+                users.forEach(user => {
+                    const userItem = document.createElement("li");
+                    userItem.setAttribute("data-username", user.nombre);
+                    userItem.setAttribute("data-status", user.estado);
+                    userItem.innerHTML = `<img src="${user.avatar}" alt="avatar" class="avatar"> ${user.nombre} <span class="status">${user.estado}</span>`;
+                    userList.appendChild(userItem);
+                });
+            });
+
+            // Manejar el evento de indicación de escritura
+            socket.on("typing", (nombre) => {
+                typingIndicator.innerText = `${nombre} está escribiendo...`;
+                setTimeout(() => { typingIndicator.innerText = ""; }, 3000);
+            });
+
+            // Manejar el evento de conexión de un usuario
+            socket.on("userConnected", (nombre) => {
+                mensajes.innerHTML += `<li class="connection-message"><em>${nombre} se ha conectado</em></li>`;
+            });
+
+            // Manejar el evento de desconexión de un usuario
+            socket.on("userDisconnected", (nombre) => {
+                mensajes.innerHTML += `<li class="disconnection-message"><em>${nombre} se ha desconectado</em></li>`;
+            });
+
+            // Manejar el evento de creación de una sala
+            socket.on("roomCreated", (room) => {
+                const roomItem = document.createElement("li");
+                roomItem.setAttribute("data-room", room);
+                roomItem.innerHTML = `<i class="fas fa-comments"></i> ${room}`;
+                roomList.appendChild(roomItem);
+            });
+
+            // Manejar el evento de salas existentes
+            socket.on("existingRooms", (rooms) => {
+                rooms.forEach(room => {
+                    const roomItem = document.createElement("li");
+                    roomItem.setAttribute("data-room", room);
+                    roomItem.innerHTML = `<i class="fas fa-comments"></i> ${room}`;
+                    roomList.appendChild(roomItem);
+                });
+            });
+
+            // Manejar el evento de clic en el botón de salir de la sala
+            document.getElementById('leaveRoomButton').addEventListener('click', () => {
+                if (miSala) {
+                    socket.emit('leaveRoom', miSala);
+                    handleRoomSelection('none');
+                }
+            });
+
+            // Manejar el evento de clic en el botón de eliminar la sala
+            document.getElementById('deleteRoomButton').addEventListener('click', () => {
+                if (miSala) {
+                    socket.emit('deleteRoom', miSala);
+                    handleRoomSelection('none');
+                }
+            });
+
+            // Manejar el evento de salida de una sala
+            socket.on('roomLeft', (room) => {
+                const roomItem = document.querySelector(`#roomList li[data-room="${room}"]`);
+                if (roomItem) {
+                    roomItem.remove();
+                }
+            });
+
+            // Manejar el evento de eliminación de una sala
+            socket.on('roomDeleted', (room) => {
+                const roomItem = document.querySelector(`#roomList li[data-room="${room}"]`);
+                if (roomItem) {
+                    roomItem.remove();
+                }
+            });
+
+            // Manejar el evento de fallo en la creación de una sala
+            socket.on('roomCreationFailed', (errorMessage) => {
+                showModal(errorMessage);
+            });
+        };
+    </script>
+</head>
+<body>
+    <!-- Formulario de inicio de sesión -->
+    <div id="loginForm">
+        <h2>Identifícate</h2>
+        <form>
+            <input type="text" id="nombre" placeholder="Nombre" required>
+            <input type="text" id="estado" placeholder="Estado" required>
+            <div>
+                <!-- Selección de avatar -->
+                <label><input type="radio" name="avatar" value="avatars/avatar1.png" required> <img src="avatars/avatar1.png" alt="avatar1" class="avatar"></label>
+                <label><input type="radio" name="avatar" value="avatars/avatar2.png"> <img src="avatars/avatar2.png" alt="avatar2" class="avatar"></label>
+                <label><input type="radio" name="avatar" value="avatars/avatar3.png"> <img src="avatars/avatar3.png" alt="avatar3" class="avatar"></label>
+                <label><input type="radio" name="avatar" value="custom"> <input type="file" id="customAvatar" accept="image/*" disabled></label>
+            </div>
+            <div>
+                <!-- Selección de sala -->
+                <label for="roomSelect">Selecciona una sala:</label>
+                <select id="roomSelect" required>
+                    <option value="none">Ninguna</option>
+                    <option value="general">General</option>
+                    <option value="chat1">Chat 1</option>
+                    <option value="chat2">Chat 2</option>
+                </select>
+            </div>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+
+    <!-- Contenedor principal del chat -->
+    <div id="chatContainer" style="display:none;">
+        <div id="sidebar">
+            <h3>Salas</h3>
+            <ul id="roomList">
+                <li data-room="general"><i class="fas fa-comments"></i> General</li>
+                <li data-room="chat1"><i class="fas fa-comments"></i> Chat 1</li>
+                <li data-room="chat2"><i class="fas fa-comments"></i> Chat 2</li>
+            </ul>
+            <form id="createRoomForm">
+                <input type="text" id="newRoomName" placeholder="Nueva sala" required>
+                <button type="submit"><i class="fas fa-plus"></i> Crear Sala</button>
+            </form>
+            <h3>Usuarios Conectados</h3>
+            <ul id="userList">
+                <li data-username="Usuario" data-status="Online"><img src="avatars/avatar1.png" alt="avatar" class="avatar"> Usuario <span class="status">Online</span></li>
+            </ul>
+        </div>
+        <div id="chatBox">
+            <div id="chatHeader" style="display: none;">
+                <img id="chatAvatar" src="" alt="avatar" class="avatar" style="display: none;">
+                <span id="chatName"></span>
+                <span id="chatStatus"></span>
+                <button id="leaveRoomButton" style="display: none;">Salir de la sala</button>
+                <button id="deleteRoomButton" style="display: none;">Eliminar sala</button>
+            </div>
+            <div id="welcomeMessage" style="display: none;">
+                <h2>Bienvenido a WhatsApp Clone</h2>
+                <p>Selecciona una sala para comenzar a chatear.</p>
+                <p>Con WhatsApp Clone, puedes:</p>
+                <ul>
+                    <li><i class="fas fa-comments"></i> Crear y unirte a salas de chat.</li>
+                    <li><i class="fas fa-paper-plane"></i> Enviar mensajes y archivos.</li>
+                    <li><i class="fas fa-user-friends"></i> Chatear de forma privada con otros usuarios.</li>
+                    <li><i class="fas fa-bell"></i> Recibir notificaciones en tiempo real.</li>
+                </ul>
+                <p>¡Empieza ahora y disfruta de una experiencia de chat fluida y segura!</p>
+                <img src="img/logo.png" alt="Welcome Image" class="welcome-image">
+            </div>
+            <ul id="mensajes" style="display: none;"></ul>
+            <ul id="privateMessages" style="display: none;"></ul>
+            <div id="inputContainer">
+                <label for="fileInput" id="fileLabel">
+                    <i class="fas fa-paperclip"></i>
+                </label>
+                <input type="file" id="fileInput" style="display: none;">
+                
+                <input type="text" id="cajaTexto" placeholder="Escribe un mensaje...">
+                <button id="enviar">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <p id="typingIndicator" style="display: none;"></p>
+        </div>
+    </div>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="modalMessage"></p>
+        </div>
+    </div>
+</body>
+</html>
